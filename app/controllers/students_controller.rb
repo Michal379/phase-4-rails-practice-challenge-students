@@ -2,24 +2,42 @@ class StudentsController < ApplicationController
 
     def index
         students = Student.all
-        render json: instructors, status: :created    
-        end
+        render json: students, status: :ok
+      end
+      
     
-        def show
+      def show
         student = find_student
-        render json: student.to_json(except: [:created_at, :updated_at]), status: :created
+        if student
+          render json: student.to_json(except: [:created_at, :updated_at]), status: :ok
+        else
+          render json: { errors: "Oops! Student not found" }, status: :not_found
         end
-    
-        def create
+      end
+
+      def create
         student = Student.new(student_params)
         if student.save
-            render json: student.to_json(except: [:created_at, :updated_at]), status: :created
+          render json: { result: "Student created successfully", student: student }, status: :created
+        else
+          render json: { errors: student.errors.full_messages }, status: :unprocessable_entity
+        end
+      end
+      
+      def update
+        student = find_student
+        if student
+          if student.update(student_params)
+            render json: { result: "Student updated successfully", student: student }, status: :ok
           else
             render json: { errors: student.errors.full_messages }, status: :unprocessable_entity
           end
+        else
+          render json: { errors: "Oops! Student not found" }, status: :not_found
         end
+      end
        
-        def destroy
+     def destroy
         student = find_student
         if student
         student.destroy
@@ -31,12 +49,12 @@ class StudentsController < ApplicationController
     
     private
     def find_student
-        Instructor.find_by(id: params[:id])
+        Student.find_by(id: params[:id])
     end
     
     private 
     def student_params
-        params.permit(:name)
+        params.permit(:name, :major, :age, :instructor_id)
     end
     
 end
